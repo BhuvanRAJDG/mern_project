@@ -3,45 +3,14 @@ const dotenv  = require('dotenv');
 const cors    = require('cors');
 const path    = require('path');
 const connectDB = require('./config/db');
-const seedData  = require('./config/seeder');
-const Category  = require('./models/Category');
 
 dotenv.config();
-
-const startServer = async () => {
-  await connectDB();
-  try {
-    const catCount = await Category.countDocuments();
-    if (catCount === 0) {
-      console.log('Database empty. Auto-seeding initial data...');
-      await seedData(false);
-    }
-  } catch (err) {
-    console.error('Error checking database seed status:', err);
-  }
-};
-startServer();
+connectDB();
 
 const app = express();
 
-
-// ── CORS: allow localhost in dev, any origin in prod (lock down in production) ──
-const allowedOrigins = [
-  'http://localhost:3000',
-  process.env.FRONTEND_URL  // e.g. https://freshthingsonly.vercel.app
-].filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (curl, Postman, same-origin)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}));
+// ── CORS: allow all origins ──
+app.use(cors({ origin: '*', credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -77,4 +46,4 @@ app.listen(PORT, () => {
   console.log(`🥬 FreshThingsOnly server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
 
-module.exports = app; // needed for Vercel serverless
+module.exports = app;
