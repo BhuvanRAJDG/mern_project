@@ -3,11 +3,27 @@ const dotenv  = require('dotenv');
 const cors    = require('cors');
 const path    = require('path');
 const connectDB = require('./config/db');
+const seedData  = require('./config/seeder');
+const Category  = require('./models/Category');
 
 dotenv.config();
-connectDB();
+
+const startServer = async () => {
+  await connectDB();
+  try {
+    const catCount = await Category.countDocuments();
+    if (catCount === 0) {
+      console.log('Database empty. Auto-seeding initial data...');
+      await seedData(false);
+    }
+  } catch (err) {
+    console.error('Error checking database seed status:', err);
+  }
+};
+startServer();
 
 const app = express();
+
 
 // ── CORS: allow localhost in dev, any origin in prod (lock down in production) ──
 const allowedOrigins = [

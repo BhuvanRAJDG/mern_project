@@ -61,9 +61,11 @@ const products = [
   { name: 'Pasta', description: 'Premium Italian pasta made from durum wheat semolina.', price: 75, originalPrice: 88, unit: '500g', stock: 130, category: 'pantry', rating: 4.4, reviewCount: 312, image: 'https://images.unsplash.com/photo-1551462147-37885acc36f1?w=400' },
 ];
 
-const seedData = async () => {
+const seedData = async (shouldExit = true) => {
   try {
-    await connectDB();
+    if (mongoose.connection.readyState === 0) {
+      await connectDB();
+    }
 
     // Clear existing data
     await User.deleteMany();
@@ -122,11 +124,16 @@ const seedData = async () => {
     console.log('\n✅ Database seeded successfully!');
     console.log('Admin: admin@grocery.com / admin123');
     console.log('Demo:  john@example.com / john123');
-    process.exit(0);
+    if (shouldExit) process.exit(0);
   } catch (error) {
     console.error('Seeding error:', error);
-    process.exit(1);
+    if (shouldExit) process.exit(1);
   }
 };
 
-seedData();
+if (require.main === module) {
+  seedData(true);
+}
+
+module.exports = seedData;
+
